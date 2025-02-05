@@ -1,6 +1,5 @@
-import { ID, Query } from "appwrite";
-import { account, appwriteConfig } from "./appwrite";
-import { databases, storage } from "./appwrite";
+import { ID, Models, Query } from "appwrite";
+import { appwriteConfig, databases, storage } from "./appwrite";
 import {
   User,
   Post,
@@ -12,17 +11,28 @@ import {
 } from "@/types/types";
 
 // USERS COLLECTION
-export const createUser = async (userData: User) => {
-  return await databases.createDocument<User>(
-    appwriteConfig.databaseId,
-    appwriteConfig.usersCollectionId,
-    ID.unique(),
-    userData
-  );
+export const createUser = async (userData: User): Promise<Models.Document> => {
+  try {
+    const newUser = await databases.createDocument<Models.Document>(
+      appwriteConfig.databaseId,
+      appwriteConfig.usersCollectionId,
+      ID.unique(),
+      userData
+    );
+
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("user", JSON.stringify(newUser));
+    }
+
+    return newUser;
+  } catch (error) {
+    console.error("User creation failed: ", error);
+    throw new Error("User creation failed.");
+  }
 };
 
-export const getUser = async (userId: string) => {
-  return await databases.getDocument<User>(
+export const getUser = async (userId: string): Promise<Models.Document> => {
+  return await databases.getDocument<Models.Document>(
     appwriteConfig.databaseId,
     appwriteConfig.usersCollectionId,
     userId
@@ -30,8 +40,7 @@ export const getUser = async (userId: string) => {
 };
 export const loginUser = async (email: string, password: string) => {
   try {
-    // Retrieve the user from the database by email
-    const userDocs = await databases.listDocuments<User>(
+    const userDocs = await databases.listDocuments<Models.Document>(
       appwriteConfig.databaseId,
       appwriteConfig.usersCollectionId,
       [Query.equal("email", email)]
@@ -43,23 +52,25 @@ export const loginUser = async (email: string, password: string) => {
 
     const user = userDocs.documents[0]; // Assuming email is unique and only one user will be returned
 
-    // If user is found, verify the password (you need to have hashed passwords in the database)
+    // You should use a secure method for password verification
     if (user?.password_hash !== password) {
       throw new Error("Invalid email or password.");
     }
 
-    // Create session for the user
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("user", JSON.stringify(user));
+    }
 
-    return session;
+    return user;
   } catch (error) {
     console.error("Login failed: ", error);
-    throw new Error(error.message || "Login failed.");
+    throw new Error("Login failed.");
   }
 };
 
 // POSTS COLLECTION
-export const createPost = async (postData: Post) => {
-  return await databases.createDocument<Post>(
+export const createPost = async (postData: Post): Promise<Models.Document> => {
+  return await databases.createDocument<Models.Document>(
     appwriteConfig.databaseId,
     appwriteConfig.postsCollectionId,
     ID.unique(),
@@ -67,17 +78,20 @@ export const createPost = async (postData: Post) => {
   );
 };
 
-export const getPosts = async () => {
-  return await databases.listDocuments<Post>(
+export const getPosts = async (): Promise<Models.Document[]> => {
+  const response = await databases.listDocuments<Models.Document>(
     appwriteConfig.databaseId,
     appwriteConfig.postsCollectionId,
     [Query.orderDesc("createdAt")]
   );
+  return response.documents;
 };
 
 // SKILLS COLLECTION
-export const createSkill = async (skillData: Skill) => {
-  return await databases.createDocument<Skill>(
+export const createSkill = async (
+  skillData: Skill
+): Promise<Models.Document> => {
+  return await databases.createDocument<Models.Document>(
     appwriteConfig.databaseId,
     appwriteConfig.skillsCollectionId,
     ID.unique(),
@@ -85,16 +99,19 @@ export const createSkill = async (skillData: Skill) => {
   );
 };
 
-export const getSkills = async () => {
-  return await databases.listDocuments<Skill>(
+export const getSkills = async (): Promise<Models.Document[]> => {
+  const response = await databases.listDocuments<Models.Document>(
     appwriteConfig.databaseId,
     appwriteConfig.skillsCollectionId
   );
+  return response.documents;
 };
 
 // USER_SKILLS COLLECTION
-export const addUserSkill = async (userSkillData: UserSkill) => {
-  return await databases.createDocument<UserSkill>(
+export const addUserSkill = async (
+  userSkillData: UserSkill
+): Promise<Models.Document> => {
+  return await databases.createDocument<Models.Document>(
     appwriteConfig.databaseId,
     appwriteConfig.userSkillsCollectionId,
     ID.unique(),
@@ -102,17 +119,22 @@ export const addUserSkill = async (userSkillData: UserSkill) => {
   );
 };
 
-export const getUserSkills = async (userId: string) => {
-  return await databases.listDocuments<UserSkill>(
+export const getUserSkills = async (
+  userId: string
+): Promise<Models.Document[]> => {
+  const response = await databases.listDocuments<Models.Document>(
     appwriteConfig.databaseId,
     appwriteConfig.userSkillsCollectionId,
     [Query.equal("userId", userId)]
   );
+  return response.documents;
 };
 
 // HASHTAGS COLLECTION
-export const createHashtag = async (hashtagData: Hashtag) => {
-  return await databases.createDocument<Hashtag>(
+export const createHashtag = async (
+  hashtagData: Hashtag
+): Promise<Models.Document> => {
+  return await databases.createDocument<Models.Document>(
     appwriteConfig.databaseId,
     appwriteConfig.hashtagsCollectionId,
     ID.unique(),
@@ -120,16 +142,17 @@ export const createHashtag = async (hashtagData: Hashtag) => {
   );
 };
 
-export const getHashtags = async () => {
-  return await databases.listDocuments<Hashtag>(
+export const getHashtags = async (): Promise<Models.Document[]> => {
+  const response = await databases.listDocuments<Models.Document>(
     appwriteConfig.databaseId,
     appwriteConfig.hashtagsCollectionId
   );
+  return response.documents;
 };
 
 // CHATS COLLECTION
-export const createChat = async (chatData: Chat) => {
-  return await databases.createDocument<Chat>(
+export const createChat = async (chatData: Chat): Promise<Models.Document> => {
+  return await databases.createDocument<Models.Document>(
     appwriteConfig.databaseId,
     appwriteConfig.chatsCollectionId,
     ID.unique(),
@@ -137,8 +160,10 @@ export const createChat = async (chatData: Chat) => {
   );
 };
 
-export const getUserChats = async (userId: string) => {
-  return await databases.listDocuments<Chat>(
+export const getUserChats = async (
+  userId: string
+): Promise<Models.Document[]> => {
+  const response = await databases.listDocuments<Models.Document>(
     appwriteConfig.databaseId,
     appwriteConfig.chatsCollectionId,
     [
@@ -148,11 +173,14 @@ export const getUserChats = async (userId: string) => {
       ]),
     ]
   );
+  return response.documents;
 };
 
 // CHAT MESSAGES COLLECTION
-export const sendMessage = async (messageData: ChatMessage) => {
-  return await databases.createDocument<ChatMessage>(
+export const sendMessage = async (
+  messageData: ChatMessage
+): Promise<Models.Document> => {
+  return await databases.createDocument<Models.Document>(
     appwriteConfig.databaseId,
     appwriteConfig.chatMessagesCollectionId,
     ID.unique(),
@@ -160,28 +188,26 @@ export const sendMessage = async (messageData: ChatMessage) => {
   );
 };
 
-export const getChatMessages = async (chatId: string) => {
-  return await databases.listDocuments<ChatMessage>(
+export const getChatMessages = async (
+  chatId: string
+): Promise<Models.Document[]> => {
+  const response = await databases.listDocuments<Models.Document>(
     appwriteConfig.databaseId,
     appwriteConfig.chatMessagesCollectionId,
     [Query.equal("chatId", chatId), Query.orderAsc("createdAt")]
   );
+  return response.documents;
 };
 
 // FILE STORAGE
-export const uploadFile = async (file: File) => {
-  const response = await storage.createFile(
-    appwriteConfig.storageId,
-    ID.unique(),
-    file
-  );
-  return response;
+export const uploadFile = async (file: File): Promise<Models.File> => {
+  return await storage.createFile(appwriteConfig.storageId, ID.unique(), file);
 };
 
-export const getFileUrl = (fileId: string) => {
-  return storage.getFileView(appwriteConfig.storageId, fileId).href;
+export const getFileUrl = (fileId: string): string => {
+  return storage.getFileView(appwriteConfig.storageId, fileId);
 };
 
-export const deleteFile = async (fileId: string) => {
-  return await storage.deleteFile(appwriteConfig.storageId, fileId);
+export const deleteFile = async (fileId: string): Promise<void> => {
+  await storage.deleteFile(appwriteConfig.storageId, fileId);
 };

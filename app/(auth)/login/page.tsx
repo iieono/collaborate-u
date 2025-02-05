@@ -39,20 +39,22 @@ const LoginScreen = () => {
       const hashedPassword = await hashPassword(password);
       console.log(hashedPassword);
       const session = await loginUser(email, hashedPassword);
+      console.log(session);
       alert("Kirish muvaffaqiyatli!");
       router.push("/posts");
     } catch (error) {
+      console.log(error);
       setError("Kirishda xatolik yuz berdi.");
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-[#f5ede4] to-gray-500 p-6">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-bg-light p-6">
       <h1 className="text-3xl text-center jetbrains font-bold text-secondary-dark">
         Xush kelibsiz
       </h1>
-      <p className="text-center text-xs jetbrains text-secondary-dark mt-2">
-        Hisobingizga kirish uchun ma'lumotlaringizni kiriting.
+      <p className="text-center text-sm jetbrains text-secondary-dark mt-2">
+        {`Hisobingizga kirish uchun ma'lumotlaringizni kiriting.`}
       </p>
       <input
         className="border outline-none bg-bg-secondary text-secondary-dark placeholder-secondary-dark p-3 w-full rounded-lg mt-5"
@@ -77,7 +79,7 @@ const LoginScreen = () => {
       {error && <p className="text-red-500 text-xs mt-2">{error}</p>}
       <Link
         href="/register"
-        className="absolute w-full bottom-10 flex items-center text-white underline underline-offset-4 justify-center"
+        className="absolute w-full bottom-10 flex items-center text-secondary-light underline underline-offset-4 justify-center"
       >
         {`A'zo bo'lish`}
       </Link>

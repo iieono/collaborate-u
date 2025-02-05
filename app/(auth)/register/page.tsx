@@ -3,6 +3,7 @@
 import { createUser } from "@/lib/appwrite/appwriteService";
 import { ID } from "appwrite";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 const RegisterScreen = () => {
@@ -13,6 +14,7 @@ const RegisterScreen = () => {
   const [password, setPassword] = useState("");
   const [isChecked, setIsChecked] = useState(false);
   const [error, setError] = useState("");
+  const router = useRouter();
 
   const validateEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -45,27 +47,31 @@ const RegisterScreen = () => {
   const handleRegister = async () => {
     try {
       const hashedPassword = await hashPassword(password);
-      await createUser({
+      const session = await createUser({
         id: ID.unique(),
         email,
         full_name: fullName,
         username,
         password_hash: hashedPassword,
       });
+      console.log(session);
       alert("Foydalanuvchi muvaffaqiyatli yaratildi!");
+      router.push("/posts");
     } catch (error) {
+      console.log(error);
+      alert(error);
       setError("Ro‘yxatdan o‘tishda xatolik yuz berdi.");
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-[#f5ede4] to-gray-500 p-6">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-bg-light p-6">
       {step === 1 ? (
         <>
           <h1 className="text-3xl text-center jetbrains font-bold text-secondary-dark">
             Tanish. Ilhomlan. Yuksal.
           </h1>
-          <p className="text-center text-xs jetbrains text-secondary-dark mt-2">
+          <p className="text-center text-sm jetbrains text-secondary-dark mt-2">
             Bu platforma sizga bilimlarni almashish va o‘sish imkoniyatini
             beradi.
           </p>
@@ -102,7 +108,7 @@ const RegisterScreen = () => {
           <h1 className="text-3xl text-center font-bold text-secondary-dark">
             Profilingizni yaratish
           </h1>
-          <p className="text-center text-xs jetbrains text-secondary-dark mt-2">
+          <p className="text-center text-sm jetbrains text-secondary-dark mt-2">
             Ma’lumotlaringiz platformada sizga yaxshiroq xizmat ko‘rsatish uchun
             kerak.
           </p>
@@ -137,7 +143,7 @@ const RegisterScreen = () => {
       )}
       <Link
         href="/login"
-        className="absolute w-full bottom-10 flex items-center text-white underline underline-offset-4 justify-center"
+        className="absolute w-full bottom-10 flex items-center text-secondary-light underline underline-offset-4 justify-center"
       >
         Kirish
       </Link>
